@@ -1,6 +1,8 @@
 import socket
 import struct
 import time
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from scapy.all import sniff, IP, IPv6, TCP, UDP
@@ -16,7 +18,7 @@ class Snifox:
         self.src_flows = defaultdict(int)
         self.dst_flows = defaultdict(int)
         self.unique_pairs = set()
-	self.stop_sniffing = False  
+        self.stop_sniffing = False  
 	
 
     def process_packet_raw(self, packet):
@@ -73,9 +75,9 @@ class Snifox:
         self.flow_data[(src_ip, src_port, dst_ip, dst_port)] += packet_size
         self.unique_pairs.add((src_ip, src_port, dst_ip, dst_port))
 
-    def start_sniffer(self):
-        print("Sniffer started...")
-
+    def start_sniffer(self)
+        print('-'*50)
+        print('Sniffer Started')
         if self.mode == 'raw':
             s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
             try:
@@ -86,6 +88,7 @@ class Snifox:
                 print("Sniffer stopped manually.")
             finally:
                 s.close()
+                print('Sniffer Closed')
         elif self.mode == 'scapy':
             sniff(iface=self.interface, prn=self.process_packet_scapy, store=False, timeout=self.duration)
 
@@ -97,7 +100,7 @@ class Snifox:
         min_size = min(self.packet_sizes) if self.packet_sizes else 0
         max_size = max(self.packet_sizes) if self.packet_sizes else 0
         avg_size = total_bytes / total_packets if total_packets > 0 else 0
-        
+        print("Sniffing Stats:")
         print(f"Total Data: {total_bytes} bytes")
         print(f"Total Packets: {total_packets}")
         print(f"Min Size: {min_size}, Max Size: {max_size}, Avg Size: {avg_size:.2f}")
@@ -106,7 +109,7 @@ class Snifox:
         if max_transfer_pair:
             print(f"Top Data Transfer Pair: {max_transfer_pair}: {self.flow_data[max_transfer_pair]} bytes")
 
-
+	
         # Save histogram plot
         plt.hist(self.packet_sizes, bins=20, edgecolor='black')
         plt.xlabel("Packet Size (Bytes)")
@@ -114,9 +117,10 @@ class Snifox:
         plt.title("Packet Size Distribution")
         plt.savefig(os.path.join('results', "packet_size_distribution.png"))
         plt.close()
+        print("Distribution of Packet Sizes Histogram Stored at results/packet_size_distribution.png")
 
         # Save flow data to text files
-
+	
         with open(os.path.join('results', "flow_data.txt"), "w") as f:
             for key, value in self.flow_data.items():
                 f.write(f"{key}: {value}\n")
@@ -128,6 +132,9 @@ class Snifox:
         with open(os.path.join('results', "dst_flows.txt"), "w") as f:
             for key, value in self.dst_flows.items():
                 f.write(f"{key}: {value}\n")
+        print("Flow data with IPs stored at results")
+        print("Thank You!")
+        print('-'*50)
 
     def stop(self):
         self.stop_sniffing = True

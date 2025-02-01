@@ -80,8 +80,8 @@ class Snifox_Advanced:
                     payload = pkt[Raw].load.decode()
                     if 'MAIL FROM:' in payload:
                         attacker_info['email'] = payload.split('MAIL FROM:<')[1].split('>')[0]
-                    if 'HELO' in payload:
-                        attacker_info['hostname'] = payload.split('HELO ')[1].split('\r\n')[0]
+                    if 'Host' in payload:
+                        attacker_info['hostname'] = payload.split('Host ')[1].split('\r\n')[0]
                     if 'Subject' in payload:
                         attacker_info['email_subject'] = payload.split('Subject: ')[1].split('\r\n')[0]
                     attacker_info['email_body'] = payload.split('\r\n\r\n')[1].split('\r\n.\r\n')[0]
@@ -99,6 +99,7 @@ class Snifox_Advanced:
         print("\tEmail address of the attacker: ", result['email'])
         print("\tEmail subject: ", result['email_subject'])
         print("\tEmail body: ", result['email_body'])
+        return 
         
 
 if __name__ == "__main__":
