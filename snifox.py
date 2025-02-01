@@ -7,7 +7,7 @@ from scapy.all import sniff, IP, IPv6, TCP, UDP
 import os
 
 class Snifox:
-    def __init__(self, duration=30, mode='raw', interface='enp0s1'):
+    def __init__(self, duration=30, mode='raw', interface='enp0s1',results_dir = 'results'):
         self.duration = duration
         self.mode = mode
         self.interface = interface
@@ -16,9 +16,7 @@ class Snifox:
         self.src_flows = defaultdict(int)
         self.dst_flows = defaultdict(int)
         self.unique_pairs = set()
-        self.pps_list = []  # Store packets per second
-        self.bps_list = []  # Store bits per second
-        self.start_time = time.time()
+	self.stop_sniffing = False
 
     def process_packet_raw(self, packet):
         eth_length = 14  # Ethernet header length
@@ -49,8 +47,7 @@ class Snifox:
         self.unique_pairs.add((src_ip, src_port, dst_ip, dst_port))
     
     def process_packet_scapy(self, packet):
-        current_time = time.time()
-        elapsed_time = current_time - self.start_time
+       
         packet_size = len(packet)
         self.packet_sizes.append(packet_size)
 
@@ -75,18 +72,13 @@ class Snifox:
         self.flow_data[(src_ip, src_port, dst_ip, dst_port)] += packet_size
         self.unique_pairs.add((src_ip, src_port, dst_ip, dst_port))
 
-        if elapsed_time > 0:
-            self.pps_list.append(1 / elapsed_time)
-            self.bps_list.append((packet_size * 8) / elapsed_time)
-
     def start_sniffer(self):
         print("Sniffer started...")
-        start_time = time.time()
 
         if self.mode == 'raw':
             s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
             try:
-                while time.time() - start_time < self.duration:
+                while not self.stop_sniffing:
                     raw_packet, _ = s.recvfrom(65535)
                     self.process_packet_raw(raw_packet)
             except KeyboardInterrupt:
@@ -112,33 +104,33 @@ class Snifox:
         max_transfer_pair = max(self.flow_data, key=self.flow_data.get, default=None)
         if max_transfer_pair:
             print(f"Top Data Transfer Pair: {max_transfer_pair}: {self.flow_data[max_transfer_pair]} bytes")
-        
-        max_pps = max(self.pps_list, default=0)
-        max_bps = max(self.bps_list, default=0) / 1e6
-        print(f"Max Packets Per Second (PPS): {max_pps:.2f}")
-        print(f"Max Bandwidth (Mbps): {max_bps:.2f}")
+
 
         # Save histogram plot
         plt.hist(self.packet_sizes, bins=20, edgecolor='black')
         plt.xlabel("Packet Size (Bytes)")
         plt.ylabel("Frequency")
         plt.title("Packet Size Distribution")
-        plt.savefig(os.path.join(self.results_dir, "packet_size_distribution.png"))
+        plt.savefig(os.path.join('results', "packet_size_distribution.png"))
         plt.close()
 
         # Save flow data to text files
-        with open(os.path.join(self.results_dir, "flow_data.txt"), "w") as f:
+
+        with open(os.path.join('results', "flow_data.txt"), "w") as f:
             for key, value in self.flow_data.items():
                 f.write(f"{key}: {value}\n")
         
-        with open(os.path.join(self.results_dir, "src_flows.txt"), "w") as f:
+        with open(os.path.join('results', "src_flows.txt"), "w") as f:
             for key, value in self.src_flows.items():
                 f.write(f"{key}: {value}\n")
         
-        with open(os.path.join(self.results_dir, "dst_flows.txt"), "w") as f:
+        with open(os.path.join('results', "dst_flows.txt"), "w") as f:
             for key, value in self.dst_flows.items():
                 f.write(f"{key}: {value}\n")
 
+    def stop(self):
+        self.stop_sniffing = True
+
 if __name__ == "__main__":
-    sniffer = Snifox(duration=30)
+    sniffer = Snifox()
     sniffer.start_sniffer()
