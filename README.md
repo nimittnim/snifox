@@ -39,7 +39,7 @@ cd snifox
 
 ---
 
-### **Part II - Analyzing the Given PCAP**  
+### **Part II - Catch The Flag**  
 #### **Steps:**  
 1. Run the following command:
    ```sh
