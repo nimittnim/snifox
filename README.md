@@ -52,6 +52,6 @@ cd snifox
 ## **Additional Notes**  
 - `snifox.py` requires **root (sudo) privileges** for raw packet capture.
 - Configure, the replay speed in run_part1.py.
-- It is **Linux-only** as it relies on `socket.AF_PACKET`.
+- It is **Linux-only** as it relies on `socket.AF_PACKET` in the default setup. Use scapy mode for cross platforms.
 
   
