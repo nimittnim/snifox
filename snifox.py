@@ -16,7 +16,8 @@ class Snifox:
         self.src_flows = defaultdict(int)
         self.dst_flows = defaultdict(int)
         self.unique_pairs = set()
-	self.stop_sniffing = False
+	self.stop_sniffing = False  
+	
 
     def process_packet_raw(self, packet):
         eth_length = 14  # Ethernet header length
