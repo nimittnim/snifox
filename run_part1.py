@@ -20,7 +20,7 @@ time.sleep(2)
 print('Replay started')
 # Start tcpreplay
 tcpreplay_process = subprocess.Popen(
-    ["sudo", "tcpreplay", "-i", interface, "--mbps=120", pcap_file]
+    ["sudo", "tcpreplay", "-i", interface, "--mbps=50", pcap_file]
 )
 print('-'*50)
 print('Replay stats')
